@@ -9,7 +9,7 @@ import {
 import ArrowKeyStepper, {type ScrollIndices} from './';
 import AutoSizer from '../AutoSizer';
 import Grid from '../Grid';
-import cn from 'classnames';
+import clsx from 'clsx';
 import styles from './ArrowKeyStepper.example.css';
 
 type State = {
@@ -59,7 +59,7 @@ export default class ArrowKeyStepperExample extends React.PureComponent<
           <strong>mode</strong>:
           <label>
             <input
-              aria-label="Set mode equal to &quot;cells&quot;"
+              aria-label='Set mode equal to "cells"'
               checked={mode === 'cells'}
               className={styles.Radio}
               type="radio"
@@ -72,7 +72,7 @@ export default class ArrowKeyStepperExample extends React.PureComponent<
           </label>
           <label>
             <input
-              aria-label="Set mode equal to &quot;edges&quot;"
+              aria-label='Set mode equal to "edges"'
               checked={mode === 'edges'}
               className={styles.Radio}
               type="radio"
@@ -146,11 +146,11 @@ export default class ArrowKeyStepperExample extends React.PureComponent<
   }
 
   _getColumnWidth = ({index}: {index: number}) => {
-    return (1 + index % 3) * 60;
+    return (1 + (index % 3)) * 60;
   };
 
   _getRowHeight = ({index}: {index: number}) => {
-    return (1 + index % 3) * 30;
+    return (1 + (index % 3)) * 30;
   };
 
   _cellRenderer = ({
@@ -168,7 +168,7 @@ export default class ArrowKeyStepperExample extends React.PureComponent<
     scrollToRow: number,
     style: Object,
   }) => {
-    const className = cn(styles.Cell, {
+    const className = clsx(styles.Cell, {
       [styles.FocusedCell]:
         columnIndex === scrollToColumn && rowIndex === scrollToRow,
     });

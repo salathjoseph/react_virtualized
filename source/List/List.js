@@ -14,7 +14,7 @@ import type {RowRenderer, RenderedRows, Scroll} from './types';
 
 import Grid, {accessibilityOverscanIndicesGetter} from '../Grid';
 import * as React from 'react';
-import cn from 'classnames';
+import clsx from 'clsx';
 
 /**
  * It is inefficient to create and manage a large list of DOM elements within a scrolling container
@@ -189,7 +189,7 @@ export default class List extends React.PureComponent<Props> {
   render() {
     const {className, noRowsRenderer, scrollToIndex, width} = this.props;
 
-    const classNames = cn('ReactVirtualized__List', className);
+    const classNames = clsx('ReactVirtualized__List', className);
 
     return (
       <Grid
@@ -223,8 +223,8 @@ export default class List extends React.PureComponent<Props> {
     // However as of React 16, style props are auto-frozen (at least in dev mode)
     // Check to make sure we can still modify the style before proceeding.
     // https://github.com/facebook/react/commit/977357765b44af8ff0cfea327866861073095c12#commitcomment-20648713
-    const {writable} = Object.getOwnPropertyDescriptor(style, 'width');
-    if (writable) {
+    const widthDescriptor = Object.getOwnPropertyDescriptor(style, 'width');
+    if (widthDescriptor && widthDescriptor.writable) {
       // By default, List cells should be 100% width.
       // This prevents them from flowing under a scrollbar (if present).
       style.width = '100%';

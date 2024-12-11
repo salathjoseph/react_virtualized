@@ -18,7 +18,7 @@ import type {
 import type {AnimationTimeoutId} from '../utils/requestAnimationTimeout';
 
 import * as React from 'react';
-import cn from 'classnames';
+import clsx from 'clsx';
 import calculateSizeAndPositionDataAndUpdateScrollOffset from './utils/calculateSizeAndPositionDataAndUpdateScrollOffset';
 import ScalingCellSizeAndPositionManager from './utils/ScalingCellSizeAndPositionManager';
 import createCallbackMemoizer from '../utils/createCallbackMemoizer';
@@ -28,8 +28,8 @@ import defaultOverscanIndicesGetter, {
 } from './defaultOverscanIndicesGetter';
 import updateScrollIndexHelper from './utils/updateScrollIndexHelper';
 import defaultCellRangeRenderer from './defaultCellRangeRenderer';
-import scrollbarSize from 'dom-helpers/util/scrollbarSize';
-import polyfill from 'react-lifecycles-compat';
+import scrollbarSize from 'dom-helpers/scrollbarSize';
+import {polyfill} from 'react-lifecycles-compat';
 import {
   requestAnimationTimeout,
   cancelAnimationTimeout,
@@ -135,6 +135,12 @@ type Props = {
    * This property is primarily intended for use with the WindowScroller component.
    */
   isScrolling?: boolean,
+
+  /**
+   * Opt-out of isScrolling param passed to cellRangeRenderer.
+   * To avoid the extra render when scroll stops.
+   */
+  isScrollingOptOut: boolean,
 
   /** Optional renderer to be used in place of rows when either :rowCount or :columnCount is 0.  */
   noContentRenderer: NoContentRenderer,
@@ -257,7 +263,7 @@ class Grid extends React.PureComponent<Props, State> {
     autoHeight: false,
     autoWidth: false,
     cellRangeRenderer: defaultCellRangeRenderer,
-    containerRole: 'rowgroup',
+    containerRole: 'row',
     containerStyle: {},
     estimatedColumnSize: 100,
     estimatedRowSize: 30,
@@ -276,6 +282,7 @@ class Grid extends React.PureComponent<Props, State> {
     scrollToRow: -1,
     style: {},
     tabIndex: 0,
+    isScrollingOptOut: false,
   };
 
   // Invokes onSectionRendered callback only when start/stop row or column indices change
@@ -387,6 +394,20 @@ class Grid extends React.PureComponent<Props, State> {
   }
 
   /**
+   * Gets estimated total rows' height.
+   */
+  getTotalRowsHeight() {
+    return this.state.instanceProps.rowSizeAndPositionManager.getTotalSize();
+  }
+
+  /**
+   * Gets estimated total columns' width.
+   */
+  getTotalColumnsWidth() {
+    return this.state.instanceProps.columnSizeAndPositionManager.getTotalSize();
+  }
+
+  /**
    * This method handles a scroll event originating from an external scroll control.
    * It's an advanced method and should probably not be used unless you're implementing a custom scroll-bar solution.
    */
@@ -445,7 +466,7 @@ class Grid extends React.PureComponent<Props, State> {
             : SCROLL_DIRECTION_BACKWARD
           : this.state.scrollDirectionVertical;
 
-      const newState: Object = {
+      const newState: $Shape<State> = {
         isScrolling: true,
         scrollDirectionHorizontal,
         scrollDirectionVertical,
@@ -522,8 +543,16 @@ class Grid extends React.PureComponent<Props, State> {
     // In this case the cDU handler can't know if they changed.
     // Store this flag to let the next cDU pass know it needs to recompute the scroll offset.
     this._recomputeScrollLeftFlag =
-      scrollToColumn >= 0 && columnIndex <= scrollToColumn;
-    this._recomputeScrollTopFlag = scrollToRow >= 0 && rowIndex <= scrollToRow;
+
+      scrollToColumn >= 0 &&
+      (this.state.scrollDirectionHorizontal === SCROLL_DIRECTION_FORWARD
+        ? columnIndex <= scrollToColumn
+        : columnIndex >= scrollToColumn);
+    this._recomputeScrollTopFlag =
+      scrollToRow >= 0 &&
+      (this.state.scrollDirectionVertical === SCROLL_DIRECTION_FORWARD
+        ? rowIndex <= scrollToRow
+        : rowIndex >= scrollToRow);
 
     // Clear cell cache in case we are scrolling;
     // Invalid row heights likely mean invalid cached content as well.
@@ -583,10 +612,10 @@ class Grid extends React.PureComponent<Props, State> {
     // In that event we need to remeasure.
     if (!instanceProps.scrollbarSizeMeasured) {
       this.setState(prevState => {
-        prevState.instanceProps.scrollbarSize = getScrollbarSize();
-        prevState.instanceProps.scrollbarSizeMeasured = true;
-        prevState.needToResetStyleCache = false;
-        return prevState;
+        const stateUpdate = {...prevState, needToResetStyleCache: false};
+        stateUpdate.instanceProps.scrollbarSize = getScrollbarSize();
+        stateUpdate.instanceProps.scrollbarSizeMeasured = true;
+        return stateUpdate;
       });
     }
 
@@ -594,27 +623,27 @@ class Grid extends React.PureComponent<Props, State> {
       (typeof scrollLeft === 'number' && scrollLeft >= 0) ||
       (typeof scrollTop === 'number' && scrollTop >= 0)
     ) {
-      this.setState(prevState => {
-        const stateUpdate = Grid._getScrollToPositionStateUpdate({
-          prevState,
-          scrollLeft,
-          scrollTop,
-        });
-        if (stateUpdate) {
-          stateUpdate.needToResetStyleCache = false;
-          return stateUpdate;
-        }
-        return null;
+      const stateUpdate = Grid._getScrollToPositionStateUpdate({
+        prevState: this.state,
+        scrollLeft,
+        scrollTop,
       });
+      if (stateUpdate) {
+        stateUpdate.needToResetStyleCache = false;
+        this.setState(stateUpdate);
+      }
     }
 
-    // setting the ref's scrollLeft and scrollTop.
-    // Somehow in MultiGrid the main grid doesn't trigger a update on mount.
-    if (this._scrollingContainer.scrollLeft !== this.state.scrollLeft) {
-      this._scrollingContainer.scrollLeft = this.state.scrollLeft;
-    }
-    if (this._scrollingContainer.scrollTop !== this.state.scrollTop) {
-      this._scrollingContainer.scrollTop = this.state.scrollTop;
+    // refs don't work in `react-test-renderer`
+    if (this._scrollingContainer) {
+      // setting the ref's scrollLeft and scrollTop.
+      // Somehow in MultiGrid the main grid doesn't trigger a update on mount.
+      if (this._scrollingContainer.scrollLeft !== this.state.scrollLeft) {
+        this._scrollingContainer.scrollLeft = this.state.scrollLeft;
+      }
+      if (this._scrollingContainer.scrollTop !== this.state.scrollTop) {
+        this._scrollingContainer.scrollTop = this.state.scrollTop;
+      }
     }
 
     // Don't update scroll offset if the size is 0; we don't render any cells in this case.
@@ -708,7 +737,8 @@ class Grid extends React.PureComponent<Props, State> {
     // So we should always recalculate offset afterwards.
     const sizeJustIncreasedFromZero =
       (prevProps.width === 0 || prevProps.height === 0) &&
-      (height > 0 && width > 0);
+      height > 0 &&
+      width > 0;
 
     // Update scroll offsets if the current :scrollToColumn or :scrollToRow values requires it
     // @TODO Do we also need this check or can the one in componentWillUpdate() suffice?
@@ -800,37 +830,22 @@ class Grid extends React.PureComponent<Props, State> {
     ) {
       newState.scrollLeft = 0;
       newState.scrollTop = 0;
+
+      // only use scroll{Left,Top} from props if scrollTo{Column,Row} isn't specified
+      // scrollTo{Column,Row} should override scroll{Left,Top}
     } else if (
-      nextProps.scrollLeft !== prevState.scrollLeft ||
-      nextProps.scrollTop !== prevState.scrollTop
+      (nextProps.scrollLeft !== prevState.scrollLeft &&
+        nextProps.scrollToColumn < 0) ||
+      (nextProps.scrollTop !== prevState.scrollTop && nextProps.scrollToRow < 0)
     ) {
-      // this handles the weird edge case where setting scrollToColumn in
-      // multigrid was causing multiple getDerivedStateFromProps calls. Overriding
-      // the state set in the first time.
-      // We should warn since if scrollTo{column,row} and scroll{left,top} is specified,
-      // scrollTo{column,row} should override.
-      if (
-        nextProps.scrollToColumn > 0 &&
-        prevState.scrollLeft &&
-        nextProps.scrollLeft === 0
-      ) {
-        //NOOP
-      } else if (
-        nextProps.scrollToRow > 0 &&
-        prevState.scrollTop &&
-        nextProps.scrollTop === 0
-      ) {
-        //NOOP
-      } else {
-        Object.assign(
-          newState,
-          Grid._getScrollToPositionStateUpdate({
-            prevState,
-            scrollLeft: nextProps.scrollLeft,
-            scrollTop: nextProps.scrollTop,
-          }),
-        );
-      }
+      Object.assign(
+        newState,
+        Grid._getScrollToPositionStateUpdate({
+          prevState,
+          scrollLeft: nextProps.scrollLeft,
+          scrollTop: nextProps.scrollTop,
+        }),
+      );
     }
 
     let {instanceProps} = prevState;
@@ -1031,7 +1046,7 @@ class Grid extends React.PureComponent<Props, State> {
         {...containerProps}
         aria-label={this.props['aria-label']}
         aria-readonly={this.props['aria-readonly']}
-        className={cn('ReactVirtualized__Grid', className)}
+        className={clsx('ReactVirtualized__Grid', className)}
         id={id}
         onScroll={this._onScroll}
         role={role}
@@ -1079,6 +1094,7 @@ class Grid extends React.PureComponent<Props, State> {
       overscanRowCount,
       rowCount,
       width,
+      isScrollingOptOut,
     } = props;
 
     const {
@@ -1215,6 +1231,7 @@ class Grid extends React.PureComponent<Props, State> {
         deferredMeasurementCache,
         horizontalOffsetAdjustment,
         isScrolling,
+        isScrollingOptOut,
         parent: this,
         rowSizeAndPositionManager: instanceProps.rowSizeAndPositionManager,
         rowStartIndex,
@@ -1411,7 +1428,7 @@ class Grid extends React.PureComponent<Props, State> {
     ) {
       return newState;
     }
-    return null;
+    return {};
   }
 
   /**
@@ -1419,19 +1436,16 @@ class Grid extends React.PureComponent<Props, State> {
    * Useful for animating position changes.
    */
   scrollToPosition({scrollLeft, scrollTop}: ScrollPosition) {
-    this.setState(prevState => {
-      const stateUpdate = Grid._getScrollToPositionStateUpdate({
-        prevState,
-        scrollLeft,
-        scrollTop,
-      });
-
-      if (stateUpdate) {
-        stateUpdate.needToResetStyleCache = false;
-        return stateUpdate;
-      }
-      return null;
+    const stateUpdate = Grid._getScrollToPositionStateUpdate({
+      prevState: this.state,
+      scrollLeft,
+      scrollTop,
     });
+
+    if (stateUpdate) {
+      stateUpdate.needToResetStyleCache = false;
+      this.setState(stateUpdate);
+    }
   }
 
   static _wrapSizeGetter(value: CellSize): CellSizeGetter {
@@ -1500,7 +1514,7 @@ class Grid extends React.PureComponent<Props, State> {
         scrollTop: -1,
       });
     }
-    return null;
+    return {};
   }
 
   _updateScrollLeftForScrollToColumn(
@@ -1513,8 +1527,8 @@ class Grid extends React.PureComponent<Props, State> {
     );
     if (stateUpdate) {
       stateUpdate.needToResetStyleCache = false;
+      this.setState(stateUpdate);
     }
-    this.setState(stateUpdate);
   }
 
   static _getCalculatedScrollTop(nextProps: Props, prevState: State) {
@@ -1550,11 +1564,15 @@ class Grid extends React.PureComponent<Props, State> {
 
   _resetStyleCache() {
     const styleCache = this._styleCache;
+    const cellCache = this._cellCache;
+    const {isScrollingOptOut} = this.props;
 
     // Reset cell and style caches once scrolling stops.
     // This makes Grid simpler to use (since cells commonly change).
     // And it keeps the caches from growing too large.
     // Performance is most sensitive when a user is scrolling.
+    // Don't clear visible cells from cellCache if isScrollingOptOut is specified.
+    // This keeps the cellCache to a resonable size.
     this._cellCache = {};
     this._styleCache = {};
 
@@ -1571,6 +1589,10 @@ class Grid extends React.PureComponent<Props, State> {
       ) {
         let key = `${rowIndex}-${columnIndex}`;
         this._styleCache[key] = styleCache[key];
+
+        if (isScrollingOptOut) {
+          this._cellCache[key] = cellCache[key];
+        }
       }
     }
   }
@@ -1596,7 +1618,7 @@ class Grid extends React.PureComponent<Props, State> {
         scrollTop: calculatedScrollTop,
       });
     }
-    return null;
+    return {};
   }
 
   _updateScrollTopForScrollToRow(
@@ -1609,8 +1631,8 @@ class Grid extends React.PureComponent<Props, State> {
     );
     if (stateUpdate) {
       stateUpdate.needToResetStyleCache = false;
+      this.setState(stateUpdate);
     }
-    this.setState(stateUpdate);
   }
 
   _onScroll = (event: Event) => {

@@ -1,6 +1,7 @@
 /** @flow */
 
 import type {CellRangeRendererParams} from './types';
+import React from 'react';
 
 /**
  * Default implementation of cellRangeRenderer used by Grid.
@@ -16,6 +17,7 @@ export default function defaultCellRangeRenderer({
   deferredMeasurementCache,
   horizontalOffsetAdjustment,
   isScrolling,
+  isScrollingOptOut,
   parent, // Grid (or List or Table)
   rowSizeAndPositionManager,
   rowStartIndex,
@@ -109,8 +111,11 @@ export default function defaultCellRangeRenderer({
       // However if we are scaling scroll positions and sizes, we should also avoid caching.
       // This is because the offset changes slightly as scroll position changes and caching leads to stale values.
       // For more info refer to issue #395
+      //
+      // If isScrollingOptOut is specified, we always cache cells.
+      // For more info refer to issue #1028
       if (
-        isScrolling &&
+        (isScrollingOptOut || isScrolling) &&
         !horizontalOffsetAdjustment &&
         !verticalOffsetAdjustment
       ) {
@@ -132,6 +137,10 @@ export default function defaultCellRangeRenderer({
 
       if (process.env.NODE_ENV !== 'production') {
         warnAboutMissingStyle(parent, renderedCell);
+      }
+
+      if (!renderedCell.props.role) {
+        renderedCell = React.cloneElement(renderedCell, {role: 'gridcell'});
       }
 
       renderedCells.push(renderedCell);

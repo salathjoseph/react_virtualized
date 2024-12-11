@@ -48,9 +48,9 @@ export default class DynamicHeightList extends React.PureComponent {
     const classNames = getClassName({columnIndex: 0, rowIndex: index});
 
     const imageWidth = 300;
-    const imageHeight = datum.size * (1 + index % 3);
+    const imageHeight = datum.size * (1 + (index % 3));
 
-    const source = `https://fillmurray.com/${imageWidth}/${imageHeight}`;
+    const source = `https://www.fillmurray.com/${imageWidth}/${imageHeight}`;
 
     return (
       <CellMeasurer
@@ -59,8 +59,8 @@ export default class DynamicHeightList extends React.PureComponent {
         key={key}
         rowIndex={index}
         parent={parent}>
-        {({measure}) => (
-          <div className={classNames} style={style}>
+        {({measure, registerChild}) => (
+          <div ref={registerChild} className={classNames} style={style}>
             <img
               onLoad={measure}
               src={source}

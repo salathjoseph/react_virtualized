@@ -1,4 +1,5 @@
 // @flow
+'no babel-plugin-flow-react-proptypes';
 
 import {
   requestAnimationTimeout,
@@ -46,7 +47,7 @@ function enablePointerEventsAfterDelay() {
   );
 }
 
-function onScrollWindow(event) {
+function onScrollWindow(event: Event) {
   if (
     event.currentTarget === window &&
     originalBodyPointerEvents == null &&

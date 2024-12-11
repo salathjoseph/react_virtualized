@@ -1,4 +1,4 @@
-import cn from 'classnames';
+import clsx from 'clsx';
 import Immutable from 'immutable';
 import PropTypes from 'prop-types';
 import * as React from 'react';
@@ -203,7 +203,7 @@ export default class ListExample extends React.PureComponent {
     if (showScrollingPlaceholder && isScrolling) {
       return (
         <div
-          className={cn(styles.row, styles.isScrollingPlaceholder)}
+          className={clsx(styles.row, styles.isScrollingPlaceholder)}
           key={key}
           style={style}>
           Scrolling...
@@ -223,7 +223,9 @@ export default class ListExample extends React.PureComponent {
         case 100:
           additionalContent = (
             <div>
-              It is large-sized.<br />It has a 3rd row.
+              It is large-sized.
+              <br />
+              It has a 3rd row.
             </div>
           );
           break;
