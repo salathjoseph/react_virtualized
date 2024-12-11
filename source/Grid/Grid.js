@@ -543,6 +543,7 @@ class Grid extends React.PureComponent<Props, State> {
     // In this case the cDU handler can't know if they changed.
     // Store this flag to let the next cDU pass know it needs to recompute the scroll offset.
     this._recomputeScrollLeftFlag =
+
       scrollToColumn >= 0 &&
       (this.state.scrollDirectionHorizontal === SCROLL_DIRECTION_FORWARD
         ? columnIndex <= scrollToColumn
