@@ -28,6 +28,7 @@ This may change with a future release but for the time being this component shou
 | registerChild | Function | specify grid container deeper in layout (by default `WindowScroller` uses `ReactDOM.findDOMNode` function) |
 | scrollTop     | Number   | Scroll distance from the page                                                                              |
 
+
 ### Public Methods
 
 ##### updatePosition
@@ -46,7 +47,7 @@ import 'react-virtualized/styles.css'; // only needs to be imported once
 
 ReactDOM.render(
   <WindowScroller>
-    {({ height, isScrolling, onChildScroll, scrollTop }) => (
+    {({ height, isScrolling, onChildScroll, registerChild }) => (
       <List
         autoHeight
         height={height}
@@ -55,7 +56,7 @@ ReactDOM.render(
         rowCount={...}
         rowHeight={...}
         rowRenderer={...}
-        scrollTop={scrollTop}
+        ref={registerChild}
         width={...}
       />
     )}
@@ -64,7 +65,7 @@ ReactDOM.render(
 );
 ```
 
-using `registerChild`
+using `registerChildContainer`
 
 ```javascript
 import React from 'react';
@@ -74,12 +75,12 @@ import 'react-virtualized/styles.css'; // only needs to be imported once
 
 ReactDOM.render(
   <WindowScroller>
-    {({ height, isScrolling, registerChild, scrollTop }) => (
+    {({ height, isScrolling, registerChildContainer, registerChild }) => (
       <div>
         <header>
           Table header
         </header>
-        <div ref={registerChild}>
+        <div ref={registerChildContainer}>
           <List
             autoHeight
             height={height}
@@ -87,7 +88,7 @@ ReactDOM.render(
             rowCount={...}
             rowHeight={...}
             rowRenderer={...}
-            scrollTop={scrollTop}
+            ref={registerChild}
             width={...}
           />
         </div>

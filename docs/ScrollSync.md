@@ -12,6 +12,7 @@ High order component that simplifies the process of synchronizing scrolling betw
 
 The child function is passed the following named parameters:
 
+
 | Parameter    | Type     | Description                                                                                                                                                                                                              |
 | :----------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | clientHeight | Number   | Height of the visible portion of the `Grid` (or other scroll-synced component)                                                                                                                                           |
@@ -33,6 +34,7 @@ import 'react-virtualized/styles.css'; // only needs to be imported once
 function render(props) {
   return (
     <ScrollSync>
+
       {({
         clientHeight,
         clientWidth,

@@ -2,7 +2,7 @@
 
 A windowed grid of elements. `Grid` only renders cells necessary to fill itself based on the current horizontal and vertical scroll position. A simple `Grid` example can be seen [here](#basic-grid-example).
 
-### Prop Types
+### Prop Type
 
 | Property                   | Type               | Required? | Description                                                                                                                                                                                                                                                                                                                                                                                        |
 | :------------------------- | :----------------- | :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
