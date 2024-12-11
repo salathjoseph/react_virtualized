@@ -1097,7 +1097,7 @@ describe('Grid', () => {
     });
   });
 
-  describe('styles, classNames, and ids', () => {
+  describe('styles, classNames, ids, and roles', () => {
     it('should use the expected global CSS classNames', () => {
       const rendered = findDOMNode(render(getMarkup()));
       expect(rendered.className).toEqual('ReactVirtualized__Grid');
@@ -1126,6 +1126,12 @@ describe('Grid', () => {
         rendered.querySelector('.ReactVirtualized__Grid__innerScrollContainer')
           .style.backgroundColor,
       ).toEqual('red');
+    });
+
+    it('should have the gridcell role', () => {
+      const containerStyle = {backgroundColor: 'red'};
+      const rendered = findDOMNode(render(getMarkup({containerStyle})));
+      expect(rendered.querySelectorAll('[role="gridcell"]').length).toEqual(20);
     });
   });
 

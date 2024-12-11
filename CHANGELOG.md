@@ -1,11 +1,44 @@
 ## Changelog
 
+##### NEXT
+
+- Update peer dependencies to allow React 17 ([levenleven](https://github.com/levenleven) - [#1625](https://github.com/bvaughn/react-virtualized/pull/1625))
+- Use DOM API instead of creating Trusted Types policy to append a markup ([shhnjk](https://github.com/shhnjk) - [#1627](https://github.com/bvaughn/react-virtualized/pull/1627))
+- Fix bug in WindowScroller::updatePosition ([yamadapc](https://github.com/yamadapc) - [#1642](https://github.com/bvaughn/react-virtualized/pull/1642), [#1648](https://github.com/bvaughn/react-virtualized/pull/1648))
+- Fix babel tranform es error ([fupengl](https://github.com/fupengl) - [#1651](https://github.com/bvaughn/react-virtualized/pull/1651))
+- Fix issue with unused import being emitted ([mewhhaha](https://github.com/mewhhaha) - [#1635](https://github.com/bvaughn/react-virtualized/pull/1635))
+- Fix grid roles for accessbility ([asnewman](https://github.com/asnewman) - [#1624](https://github.com/bvaughn/react-virtualized/pull/1624))
+
+##### 9.22.4
+
+- README changes
+
+##### 9.22.3
+
+- Add Trusted Types support ([shhnjk](https://github.com/shhnjk) - [#1614](https://github.com/bvaughn/react-virtualized/pull/1614))
+
+##### 9.22.2
+
+- CollectionView scrollTop/scrollLeft ([dawnmist](https://github.com/dawnmist) - [#1260](https://github.com/bvaughn/react-virtualized/pull/1260))
+
+##### 9.22.1
+
+- Upgrade babel-plugin-flow-react-proptypes ([Hypnosphi](https://github.com/Hypnosphi) - [#1578](https://github.com/bvaughn/react-virtualized/pull/1578))
+
+##### 9.22.0
+
+- Make AutoSizer a Component ([vzaidman](https://github.com/vzaidman) - [#1490](https://github.com/bvaughn/react-virtualized/pull/1490))
+- Update masonry props and docs ([seanstrom](https://github.com/seanstrom) - [#1493](https://github.com/bvaughn/react-virtualized/pull/1493))
+- CellMeasurer: add registerChild render prop ([Hypnosphi](https://github.com/Hypnosphi) - [#1477](https://github.com/bvaughn/react-virtualized/pull/1477))
+- Fix Table class names in documentation ([jakemmarsh](https://github.com/jakemmarsh) - [#1471](https://github.com/bvaughn/react-virtualized/pull/1471))
+- Fix style.css import in demo ([Dominic0512](https://github.com/Dominic0512) - [#1466](https://github.com/bvaughn/react-virtualized/pull/1466))
+
 ##### 9.21.2
 
 - 🎉 Update prettier ([wuweiweiwu](https://github.com/wuweiweiwu) - [#1455](https://github.com/bvaughn/react-virtualized/pull/1455))
 - 🎉 Remove slack from documentation ([wuweiweiwu](https://github.com/wuweiweiwu) - [#1417](https://github.com/bvaughn/react-virtualized/pull/1417))
 - 🐛 Fix masionry scroll handler target ([chinmay17](https://github.com/chinmay17) - [#1420](https://github.com/bvaughn/react-virtualized/pull/1420))
-- 🎉 AutoSizer upport for multi window ([mbman](https://github.com/mbman) - [#1421](https://github.com/bvaughn/react-virtualized/pull/1421))
+- 🎉 AutoSizer support for multi window ([mbman](https://github.com/mbman) - [#1421](https://github.com/bvaughn/react-virtualized/pull/1421))
 - 🎉 Upgrade dom-helpers ([dominykas](https://github.com/dominykas) - [#1424](https://github.com/bvaughn/react-virtualized/pull/1424))
 - 🎉 Remove react-vtree from docs ([Lodin](https://github.com/Lodin) - [#1415](https://github.com/bvaughn/react-virtualized/pull/1415))
 - 🐛 Fix detection of chrome ([nifgraup](https://github.com/nifgraup) - [#1355](https://github.com/bvaughn/react-virtualized/pull/1355))

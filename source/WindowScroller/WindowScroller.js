@@ -51,6 +51,9 @@ type Props = {
 
   /** Width used for server-side rendering */
   serverWidth: number,
+
+  /** Force scrollTop updates when .updatePosition is called, fixing forced header height change updates */
+  updateScrollTopOnUpdatePosition?: boolean,
 };
 
 type State = {
@@ -69,7 +72,7 @@ type DetectElementResize = {
 };
 
 /**
- * Specifies the number of miliseconds during which to disable pointer events while a scroll is in progress.
+ * Specifies the number of milliseconds during which to disable pointer events while a scroll is in progress.
  * This improves performance and makes scrolling smoother.
  */
 export const IS_SCROLLING_TIMEOUT = 150;
@@ -122,6 +125,11 @@ export default class WindowScroller extends React.PureComponent<Props, State> {
         height: dimensions.height,
         width: dimensions.width,
       });
+    }
+
+    if (this.props.updateScrollTopOnUpdatePosition === true) {
+      this.__handleWindowScrollEvent();
+      this.__resetIsScrolling();
     }
   }
 
